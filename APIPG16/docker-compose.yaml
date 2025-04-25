@@ -1,0 +1,66 @@
+version: "3.8"
+
+volumes:
+   db_storage:
+   n8n_storage:
+
+services:
+   "apijogos-db":
+      image: mysql:8.0
+      user: root
+      restart: always
+      environment:
+         - MYSQL_ROOT_PASSWORD=vdjOREM72Wsyct
+         - MYSQL_DATABASE=PgcGXxj5vDSAxK
+         - MYSQL_USER=NQDro4oUjytLzV
+         - MYSQL_PASSWORD=vdjOREM72Wsyct
+      volumes:
+         - "/home/docker/pin77.cloud/db:/var/lib/mysql"
+
+   "apijogos":
+      image: docker.n8n.io/n8nio/n8n
+      user: root
+      restart: always
+      environment:
+         - DB_TYPE=mysqldb
+         - DB_MYSQLDB_HOST=apijogos-db
+         - DB_MYSQLDB_PORT=3306
+         - DB_MYSQLDB_DATABASE=PgcGXxj5vDSAxK
+         - DB_MYSQLDB_USER=NQDro4oUjytLzV
+         - DB_MYSQLDB_PASSWORD=vdjOREM72Wsyct
+         - N8N_HOST=pin77.cloud
+         - NODE_ENV=production
+         - WEBHOOK_URL=https://pin77.cloud
+      ports:
+         - "11000:5678"
+      links:
+         - apijogos-db
+      volumes:
+         - "/home/docker/pin77.cloud/data:/home/node/.n8n"
+      depends_on:
+         - "apijogos-db"
+
+   "nodejs-app":
+      image: node:20
+      restart: always
+      working_dir: /app
+      volumes:
+         - "/home/docker/pin77.cloud/nodejs-app:/app"
+      ports:
+         - "3001:3001"
+      command: >
+         bash -c "npm start"
+      depends_on:
+         - "apijogos-db"
+
+   "phpmyadmin":
+      image: phpmyadmin/phpmyadmin
+      restart: always
+      environment:
+         - PMA_HOST=apijogos-db
+         - PMA_PORT=3306
+         - MYSQL_ROOT_PASSWORD=vdjOREM72Wsyct
+      ports:
+         - "3002:80"
+      depends_on:
+         - "apijogos-db"
